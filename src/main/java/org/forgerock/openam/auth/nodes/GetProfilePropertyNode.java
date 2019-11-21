@@ -4,7 +4,6 @@
  * Gets user profile attributes 
  *
  */
-
 /*
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance with the
@@ -18,27 +17,31 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2017 ForgeRock AS.
+ * Copyright 2017-2019 ForgeRock AS.
  */
-
 package org.forgerock.openam.auth.nodes;
+
+import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
+import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
+
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+
+import org.forgerock.json.JsonValue;
+import org.forgerock.openam.annotations.sm.Attribute;
+import org.forgerock.openam.auth.node.api.Action;
+import org.forgerock.openam.auth.node.api.Node;
+import org.forgerock.openam.auth.node.api.SingleOutcomeNode;
+import org.forgerock.openam.auth.node.api.TreeContext;
+import org.forgerock.openam.core.CoreWrapper;
 
 import com.google.inject.assistedinject.Assisted;
 import com.iplanet.sso.SSOException;
-import com.sun.identity.idm.*;
+import com.sun.identity.idm.AMIdentity;
+import com.sun.identity.idm.IdRepoException;
 import com.sun.identity.shared.debug.Debug;
-import org.forgerock.json.JsonValue;
-import org.forgerock.openam.annotations.sm.Attribute;
-import org.forgerock.openam.auth.node.api.*;
-import org.forgerock.openam.core.CoreWrapper;
-import org.forgerock.openam.utils.CollectionUtils;
-
-import javax.inject.Inject;
-import java.util.*;
-
-import static org.forgerock.openam.auth.node.api.SharedStateConstants.AUTH_LEVEL;
-import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
-import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
 
 /**
  * A node which contributes a configurable set of properties to be added to the user's session, if/when it is created.
@@ -99,20 +102,20 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
 
                 if (idAttrs == null || idAttrs.isEmpty()) {
 
-                    debug.error("[" + DEBUG_FILE + "]: " + "Unable to find attribute value for: " + key);
+                    debug.warning("[" + DEBUG_FILE + "]: " + "Unable to find attribute value for: " + key);
                     
 
                 } else {
 
-                    debug.error("[" + DEBUG_FILE + "]: " + "Found attribute value for: " + key);
+                    debug.message("[" + DEBUG_FILE + "]: " + "Found attribute value for: " + key);
                     String attr = idAttrs.iterator().next();
                     newSharedState.put(config.properties().get(key), attr);
-                    debug.error("[" + DEBUG_FILE + "]: " + "sharedState : " + newSharedState);
+                    debug.message("[" + DEBUG_FILE + "]: " + "sharedState : " + newSharedState);
 
                 }
             } catch (IdRepoException e) {
 
-                debug.error("[" + DEBUG_FILE + "]: " + " Error storing profile atttibute '{}' ", e);
+                debug.error("[" + DEBUG_FILE + "]: " + " Error storing profile attribute '{}' ", e);
 
             } catch (SSOException e) {
 
