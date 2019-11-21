@@ -11,14 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2017 ForgeRock AS.
+ * Copyright 2017-2019 ForgeRock AS.
  */
 /*
  * jon.knight@forgerock.com
  *
  * Needed to register the node
  */
-
 package org.forgerock.openam.auth.nodes;
 
 import static java.util.Arrays.asList;
@@ -43,6 +42,7 @@ public class GetProfilePropertyNodePlugin extends AbstractNodeAmPlugin {
 
     /**
      * DI-enabled constructor.
+     *
      * @param serviceRegistry A service registry instance.
      */
     @Inject

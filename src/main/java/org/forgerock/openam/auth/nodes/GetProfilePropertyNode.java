@@ -1,7 +1,7 @@
 /*
  * jon.knight@forgerock.com
  *
- * Gets user profile attributes 
+ * Gets user profile attributes
  *
  */
 /*
@@ -61,6 +61,7 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
     public interface Config {
         /**
          * A map of property name to value.
+         *
          * @return a map of properties.
          */
         @Attribute(order = 100)
@@ -71,6 +72,7 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
 
     /**
      * Constructs a new GetSessionPropertiesNode instance.
+     *
      * @param config Node configuration.
      */
     @Inject
@@ -81,49 +83,30 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
 
     @Override
     public Action process(TreeContext context) {
-
         debug.message("[" + DEBUG_FILE + "]: " + "Starting");
-
-        AMIdentity userIdentity = coreWrapper.getIdentity(context.sharedState.get(USERNAME).asString(),context.sharedState.get(REALM).asString());
-
+        AMIdentity userIdentity = coreWrapper.getIdentity(context.sharedState.get(USERNAME).asString(),
+                context.sharedState.get(REALM).asString());
         JsonValue newSharedState = context.sharedState.copy();
-
         Set<String> configKeys = config.properties().keySet();
-        
-        for (String key: configKeys) {
-
+        for (String key : configKeys) {
             debug.message("[" + DEBUG_FILE + "]: Looking for profile attribute " + key);
-
             try {
-
                 Set<String> idAttrs = userIdentity.getAttribute(key);
-
-               
-
                 if (idAttrs == null || idAttrs.isEmpty()) {
-
                     debug.warning("[" + DEBUG_FILE + "]: " + "Unable to find attribute value for: " + key);
-                    
-
                 } else {
-
                     debug.message("[" + DEBUG_FILE + "]: " + "Found attribute value for: " + key);
                     String attr = idAttrs.iterator().next();
                     newSharedState.put(config.properties().get(key), attr);
                     debug.message("[" + DEBUG_FILE + "]: " + "sharedState : " + newSharedState);
-
                 }
             } catch (IdRepoException e) {
-
                 debug.error("[" + DEBUG_FILE + "]: " + " Error storing profile attribute '{}' ", e);
-
             } catch (SSOException e) {
-
                 debug.error("[" + DEBUG_FILE + "]: " + "Node exception", e);
             }
         }
 
         return goToNext().replaceSharedState(newSharedState).build();
     }
-
 }
