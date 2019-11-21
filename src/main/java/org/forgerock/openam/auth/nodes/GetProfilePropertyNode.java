@@ -21,6 +21,7 @@
  */
 package org.forgerock.openam.auth.nodes;
 
+import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
 
@@ -36,12 +37,13 @@ import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.auth.node.api.SingleOutcomeNode;
 import org.forgerock.openam.auth.node.api.TreeContext;
 import org.forgerock.openam.core.CoreWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.assistedinject.Assisted;
 import com.iplanet.sso.SSOException;
 import com.sun.identity.idm.AMIdentity;
 import com.sun.identity.idm.IdRepoException;
-import com.sun.identity.shared.debug.Debug;
 
 /**
  * A node which contributes a configurable set of properties to be added to the user's session, if/when it is created.
@@ -50,10 +52,8 @@ import com.sun.identity.shared.debug.Debug;
         configClass = GetProfilePropertyNode.Config.class)
 public class GetProfilePropertyNode extends SingleOutcomeNode {
 
-    private final static String DEBUG_FILE = "GetProfilePropertyNode";
-    protected Debug debug = Debug.getInstance(DEBUG_FILE);
+    private static final Logger logger = LoggerFactory.getLogger(GetProfilePropertyNode.class);
     private final CoreWrapper coreWrapper;
-
 
     /**
      * Configuration for the node.
@@ -83,30 +83,41 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
 
     @Override
     public Action process(TreeContext context) {
-        debug.message("[" + DEBUG_FILE + "]: " + "Starting");
-        AMIdentity userIdentity = coreWrapper.getIdentity(context.sharedState.get(USERNAME).asString(),
-                context.sharedState.get(REALM).asString());
+        String username = context.sharedState.get(USERNAME).asString();
+        String realm = context.sharedState.get(REALM).asString();
+        logger.trace("Searching for user {} in realm {}", username, realm);
+        AMIdentity userIdentity = coreWrapper.getIdentity(username, realm);
+        if (userIdentity == null) {
+            logger.error("Unable to find user identity, profile attributes will not be saved in shared state");
+            return goToNext().build();
+        }
+
         JsonValue newSharedState = context.sharedState.copy();
-        Set<String> configKeys = config.properties().keySet();
-        for (String key : configKeys) {
-            debug.message("[" + DEBUG_FILE + "]: Looking for profile attribute " + key);
-            try {
-                Set<String> idAttrs = userIdentity.getAttribute(key);
-                if (idAttrs == null || idAttrs.isEmpty()) {
-                    debug.warning("[" + DEBUG_FILE + "]: " + "Unable to find attribute value for: " + key);
+        Set<String> attributesToRetrieve = config.properties().keySet();
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Set<String>> attributes = userIdentity.getAttributes(attributesToRetrieve);
+            for (String attribute : attributesToRetrieve) {
+                Set<String> values = attributes.get(attribute);
+                if (values == null || values.isEmpty()) {
+                    logger.warn("Unable to find attribute value for: {}", attribute);
                 } else {
-                    debug.message("[" + DEBUG_FILE + "]: " + "Found attribute value for: " + key);
-                    String attr = idAttrs.iterator().next();
-                    newSharedState.put(config.properties().get(key), attr);
-                    debug.message("[" + DEBUG_FILE + "]: " + "sharedState : " + newSharedState);
+                    logger.trace("Found attribute value for: {}", attribute);
+                    newSharedState.put(config.properties().get(attribute), convertValues(values));
                 }
-            } catch (IdRepoException e) {
-                debug.error("[" + DEBUG_FILE + "]: " + " Error storing profile attribute '{}' ", e);
-            } catch (SSOException e) {
-                debug.error("[" + DEBUG_FILE + "]: " + "Node exception", e);
             }
+        } catch (IdRepoException | SSOException ex) {
+            logger.error("Unable to retrieve profile attributes", ex);
         }
 
         return goToNext().replaceSharedState(newSharedState).build();
+    }
+
+    private Object convertValues(Set<String> values) {
+        if (values.size() == 1) {
+            return values.iterator().next();
+        } else {
+            return array(values.toArray());
+        }
     }
 }
