@@ -29,7 +29,9 @@
     <description>An Authentication Tree Node for ForgeRock's Identity Platform</description>
 
     <properties>
-        <am.version>6.5.0</am.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <access-manager.version>6.5.3</access-manager.version>
     </properties>
 
     <dependencyManagement>
@@ -39,7 +41,7 @@
                 <artifactId>openam-auth-trees</artifactId>
                 <type>pom</type>
                 <scope>import</scope>
-                <version>${am.version}</version>
+                <version>${access-manager.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -51,15 +53,12 @@
         </dependency>
         <dependency>
             <groupId>org.forgerock.am</groupId>
-            <artifactId>openam-guice-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.forgerock.am</groupId>
             <artifactId>openam-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.forgerock.am</groupId>
-            <artifactId>openam-scripting</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -77,20 +76,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <repositories>
         <repository>
