@@ -12,8 +12,9 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2019 ForgeRock AS.
+ * Portions copyright 2021 Identity Fusion Inc.
  */
-package org.forgerock.openam.auth.nodes;
+package com.idf.auth.nodes;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -36,7 +37,6 @@ import org.forgerock.openam.auth.node.api.Action;
 import org.forgerock.openam.auth.node.api.ExternalRequestContext;
 import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.auth.node.api.TreeContext;
-import org.forgerock.openam.auth.nodes.GetProfilePropertyNode.Config;
 import org.forgerock.openam.core.CoreWrapper;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -45,6 +45,7 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.idf.auth.nodes.GetProfilePropertyNode.Config;
 import com.sun.identity.idm.AMIdentity;
 
 public class GetProfilePropertyNodeTest {

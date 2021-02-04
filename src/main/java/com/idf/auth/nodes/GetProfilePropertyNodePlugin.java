@@ -12,13 +12,14 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2017-2019 ForgeRock AS.
+ * Portions copyright 2021 Identity Fusion Inc.
  */
 /*
  * jon.knight@forgerock.com
  *
  * Needed to register the node
  */
-package org.forgerock.openam.auth.nodes;
+package com.idf.auth.nodes;
 
 import static java.util.Collections.singletonList;
 

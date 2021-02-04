@@ -12,6 +12,7 @@
 # information: "Portions copyright [year] [name of copyright owner]".
 #
 # Copyright 2017 ForgeRock AS.
+# Portions copyright 2021 Identity Fusion Inc.
 #
 
-org.forgerock.openam.auth.nodes.GetProfilePropertyNodePlugin
+com.idf.auth.nodes.GetProfilePropertyNodePlugin

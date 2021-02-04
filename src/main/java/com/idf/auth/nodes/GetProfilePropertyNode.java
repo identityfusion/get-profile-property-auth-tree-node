@@ -18,8 +18,9 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2017-2019 ForgeRock AS.
+ * Portions copyright 2021 Identity Fusion Inc.
  */
-package org.forgerock.openam.auth.nodes;
+package com.idf.auth.nodes;
 
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
