@@ -20,7 +20,7 @@
  * Copyright 2017-2019 ForgeRock AS.
  * Portions copyright 2021 Identity Fusion Inc.
  */
-package com.idf.auth.nodes;
+package com.idf.openam.authentication.node;
 
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;

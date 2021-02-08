@@ -14,7 +14,7 @@
  * Copyright 2019 ForgeRock AS.
  * Portions copyright 2021 Identity Fusion Inc.
  */
-package com.idf.auth.nodes;
+package com.idf.openam.authentication.node;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -45,7 +45,6 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.idf.auth.nodes.GetProfilePropertyNode.Config;
 import com.sun.identity.idm.AMIdentity;
 
 public class GetProfilePropertyNodeTest {
@@ -53,7 +52,7 @@ public class GetProfilePropertyNodeTest {
     private static final String USER = "user.1";
     private static final String REALM_NAME = "hello-world";
     @Mock
-    private Config config;
+    private GetProfilePropertyNode.Config config;
     @Mock
     private CoreWrapper coreWrapper;
     @Mock

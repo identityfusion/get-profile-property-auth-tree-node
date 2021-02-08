@@ -15,4 +15,4 @@
 # Portions copyright 2021 Identity Fusion Inc.
 #
 
-com.idf.auth.nodes.GetProfilePropertyNodePlugin
+com.idf.openam.authentication.node.GetProfilePropertyNodePlugin

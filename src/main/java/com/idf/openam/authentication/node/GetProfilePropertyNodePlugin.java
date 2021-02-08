@@ -19,20 +19,24 @@
  *
  * Needed to register the node
  */
-package com.idf.auth.nodes;
+package com.idf.openam.authentication.node;
 
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
+
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.forgerock.openam.auth.node.api.AbstractNodeAmPlugin;
 import org.forgerock.openam.auth.node.api.Node;
-import org.forgerock.openam.plugins.PluginException;
 
 /**
  * Core nodes installed by default with no engine dependencies.
  */
 public class GetProfilePropertyNodePlugin extends AbstractNodeAmPlugin {
+
+    private static final String PLUGIN_VERSION = "1.0.0";
 
     /**
      * DI-enabled constructor.
@@ -43,18 +47,11 @@ public class GetProfilePropertyNodePlugin extends AbstractNodeAmPlugin {
 
     @Override
     public String getPluginVersion() {
-        return "1.0.0";
+        return PLUGIN_VERSION;
     }
 
     @Override
-    public void onStartup() throws PluginException {
-        for (Class<? extends Node> nodeClass : getNodes()) {
-            pluginTools.registerAuthNode(nodeClass);
-        }
-    }
-
-    @Override
-    protected Iterable<? extends Class<? extends Node>> getNodes() {
-        return singletonList(GetProfilePropertyNode.class);
+    protected Map<String, Iterable<? extends Class<? extends Node>>> getNodesByVersion() {
+        return singletonMap(PLUGIN_VERSION, singletonList(GetProfilePropertyNode.class));
     }
 }

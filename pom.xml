@@ -21,12 +21,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.idf.openam.auth</groupId>
+    <groupId>com.idf.openam.authentication.node</groupId>
     <artifactId>get-profile-property-auth-tree-node</artifactId>
     <version>1.0.0</version>
 
     <name>Get Profile Property Authentication Node</name>
-    <description>An Authentication Tree Node for ForgeRock's Identity Platform</description>
+    <description>An Authentication Tree Node for ForgeRock's Identity Platform.</description>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
