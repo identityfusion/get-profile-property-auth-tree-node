@@ -1,10 +1,4 @@
 /*
- * jon.knight@forgerock.com
- *
- * Gets user profile attributes
- *
- */
-/*
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance with the
  * License.
@@ -18,12 +12,11 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2017-2019 ForgeRock AS.
- * Portions copyright 2021 Identity Fusion Inc.
+ * Portions copyright 2021-2022 Identity Fusion Inc.
  */
-package com.idf.openam.authentication.node;
+package com.idf.am.auth.node;
 
 import static org.forgerock.json.JsonValue.array;
-import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
 
 import java.util.Map;
@@ -31,13 +24,16 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.forgerock.json.JsonValue;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.Action;
+import org.forgerock.openam.auth.node.api.InputState;
 import org.forgerock.openam.auth.node.api.Node;
+import org.forgerock.openam.auth.node.api.NodeState;
+import org.forgerock.openam.auth.node.api.OutputState;
 import org.forgerock.openam.auth.node.api.SingleOutcomeNode;
 import org.forgerock.openam.auth.node.api.TreeContext;
 import org.forgerock.openam.core.CoreWrapper;
+import org.forgerock.openam.core.realms.Realm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +51,7 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
 
     private static final Logger logger = LoggerFactory.getLogger(GetProfilePropertyNode.class);
     private final CoreWrapper coreWrapper;
+    private final Realm realm;
 
     /**
      * Configuration for the node.
@@ -77,15 +74,16 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
      * @param config Node configuration.
      */
     @Inject
-    public GetProfilePropertyNode(@Assisted Config config, CoreWrapper coreWrapper) {
+    public GetProfilePropertyNode(@Assisted Config config, @Assisted Realm realm, CoreWrapper coreWrapper) {
         this.config = config;
+        this.realm = realm;
         this.coreWrapper = coreWrapper;
     }
 
     @Override
     public Action process(TreeContext context) {
-        String username = context.sharedState.get(USERNAME).asString();
-        String realm = context.sharedState.get(REALM).asString();
+        NodeState state = context.getStateFor(this);
+        String username = state.get(USERNAME).asString();
         logger.trace("Searching for user {} in realm {}", username, realm);
         AMIdentity userIdentity = coreWrapper.getIdentity(username, realm);
         if (userIdentity == null) {
@@ -93,7 +91,6 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
             return goToNext().build();
         }
 
-        JsonValue newSharedState = context.sharedState.copy();
         Set<String> attributesToRetrieve = config.properties().keySet();
         try {
             @SuppressWarnings("unchecked")
@@ -104,14 +101,14 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
                     logger.warn("Unable to find attribute value for: {}", attribute);
                 } else {
                     logger.trace("Found attribute value for: {}", attribute);
-                    newSharedState.put(config.properties().get(attribute), convertValues(values));
+                    state.putShared(config.properties().get(attribute), convertValues(values));
                 }
             }
         } catch (IdRepoException | SSOException ex) {
             logger.error("Unable to retrieve profile attributes", ex);
         }
 
-        return goToNext().replaceSharedState(newSharedState).build();
+        return goToNext().build();
     }
 
     private Object convertValues(Set<String> values) {
@@ -120,5 +117,20 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
         } else {
             return array(values.toArray());
         }
+    }
+
+    @Override
+    public InputState[] getInputs() {
+        return new InputState[]{
+                new InputState(USERNAME)
+        };
+    }
+
+    @Override
+    public OutputState[] getOutputs() {
+        return config.properties().values()
+                .stream()
+                .map(OutputState::new)
+                .toArray(OutputState[]::new);
     }
 }

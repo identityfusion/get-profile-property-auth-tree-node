@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2017 ForgeRock AS.
+ * Portions copyright 2021-2022 Identity Fusion Inc.
 -->
 # Get Profile Authentication Node
 

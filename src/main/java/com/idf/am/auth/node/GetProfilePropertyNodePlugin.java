@@ -12,14 +12,9 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2017-2019 ForgeRock AS.
- * Portions copyright 2021 Identity Fusion Inc.
+ * Portions copyright 2021-2022 Identity Fusion Inc.
  */
-/*
- * jon.knight@forgerock.com
- *
- * Needed to register the node
- */
-package com.idf.openam.authentication.node;
+package com.idf.am.auth.node;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -38,9 +33,6 @@ public class GetProfilePropertyNodePlugin extends AbstractNodeAmPlugin {
 
     private static final String PLUGIN_VERSION = "1.0.0";
 
-    /**
-     * DI-enabled constructor.
-     */
     @Inject
     public GetProfilePropertyNodePlugin() {
     }

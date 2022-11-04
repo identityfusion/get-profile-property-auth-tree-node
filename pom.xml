@@ -13,7 +13,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2017-2019 ForgeRock AS.
- * Portions copyright 2021 Identity Fusion Inc.
+ * Portions copyright 2021-2022 Identity Fusion Inc.
  * 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -21,7 +21,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.idf.openam.authentication.node</groupId>
+    <groupId>com.idf.am.auth.node</groupId>
     <artifactId>get-profile-property-auth-tree-node</artifactId>
     <version>1.0.0</version>
 
@@ -29,9 +29,9 @@
     <description>An Authentication Tree Node for ForgeRock's Identity Platform.</description>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <access-manager.version>6.5.3</access-manager.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <access-manager.version>7.1.2</access-manager.version>
     </properties>
 
     <dependencyManagement>
