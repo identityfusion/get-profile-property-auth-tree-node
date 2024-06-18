@@ -12,7 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2017-2019 ForgeRock AS.
- * Portions copyright 2021-2022 Identity Fusion Inc.
+ * Portions copyright 2021-2024 Identity Fusion Inc.
  */
 package com.idf.am.auth.node;
 
@@ -20,10 +20,13 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.forgerock.am.identity.application.IdentityStoreFactory;
+import org.forgerock.am.identity.persistence.IdentityStore;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.Action;
 import org.forgerock.openam.auth.node.api.InputState;
@@ -32,7 +35,6 @@ import org.forgerock.openam.auth.node.api.NodeState;
 import org.forgerock.openam.auth.node.api.OutputState;
 import org.forgerock.openam.auth.node.api.SingleOutcomeNode;
 import org.forgerock.openam.auth.node.api.TreeContext;
-import org.forgerock.openam.core.CoreWrapper;
 import org.forgerock.openam.core.realms.Realm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.iplanet.sso.SSOException;
 import com.sun.identity.idm.AMIdentity;
 import com.sun.identity.idm.IdRepoException;
+import com.sun.identity.idm.IdType;
 
 /**
  * A node which contributes a configurable set of properties to be added to the user's session, if/when it is created.
@@ -50,8 +53,8 @@ import com.sun.identity.idm.IdRepoException;
 public class GetProfilePropertyNode extends SingleOutcomeNode {
 
     private static final Logger logger = LoggerFactory.getLogger(GetProfilePropertyNode.class);
-    private final CoreWrapper coreWrapper;
     private final Realm realm;
+    private final IdentityStoreFactory identityStoreFactory;
 
     /**
      * Configuration for the node.
@@ -74,10 +77,11 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
      * @param config Node configuration.
      */
     @Inject
-    public GetProfilePropertyNode(@Assisted Config config, @Assisted Realm realm, CoreWrapper coreWrapper) {
+    public GetProfilePropertyNode(@Assisted Config config, @Assisted Realm realm,
+            IdentityStoreFactory identityStoreFactory) {
         this.config = config;
         this.realm = realm;
-        this.coreWrapper = coreWrapper;
+        this.identityStoreFactory = identityStoreFactory;
     }
 
     @Override
@@ -85,23 +89,25 @@ public class GetProfilePropertyNode extends SingleOutcomeNode {
         NodeState state = context.getStateFor(this);
         String username = state.get(USERNAME).asString();
         logger.trace("Searching for user {} in realm {}", username, realm);
-        AMIdentity userIdentity = coreWrapper.getIdentity(username, realm);
-        if (userIdentity == null) {
-            logger.error("Unable to find user identity, profile attributes will not be saved in shared state");
-            return goToNext().build();
-        }
 
-        Set<String> attributesToRetrieve = config.properties().keySet();
+        IdentityStore identityStore = identityStoreFactory.create(realm);
         try {
+            Optional<AMIdentity> identity = identityStore.findIdentityByUsername(username, IdType.USER);
+            if (identity.isEmpty()) {
+                logger.error("Unable to find user identity, profile attributes will not be saved in shared state");
+                return goToNext().build();
+            }
+            Map<String, String> attributeMappings = config.properties();
             @SuppressWarnings("unchecked")
-            Map<String, Set<String>> attributes = userIdentity.getAttributes(attributesToRetrieve);
-            for (String attribute : attributesToRetrieve) {
+            Map<String, Set<String>> attributes = identity.get().getAttributes(attributeMappings.keySet());
+            for (Map.Entry<String, String> mapping : attributeMappings.entrySet()) {
+                String attribute = mapping.getKey();
                 Set<String> values = attributes.get(attribute);
                 if (values == null || values.isEmpty()) {
                     logger.warn("Unable to find attribute value for: {}", attribute);
                 } else {
                     logger.trace("Found attribute value for: {}", attribute);
-                    state.putShared(config.properties().get(attribute), convertValues(values));
+                    state.putShared(mapping.getValue(), convertValues(values));
                 }
             }
         } catch (IdRepoException | SSOException ex) {

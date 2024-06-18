@@ -32,12 +32,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Optional;
 
+import org.forgerock.am.identity.application.IdentityStoreFactory;
+import org.forgerock.am.identity.persistence.IdentityStore;
 import org.forgerock.openam.auth.node.api.Action;
 import org.forgerock.openam.auth.node.api.ExternalRequestContext;
 import org.forgerock.openam.auth.node.api.InputState;
 import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.auth.node.api.TreeContext;
-import org.forgerock.openam.core.CoreWrapper;
 import org.forgerock.openam.core.realms.Realm;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -48,6 +49,7 @@ import org.testng.annotations.Test;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.sun.identity.idm.AMIdentity;
+import com.sun.identity.idm.IdType;
 
 public class GetProfilePropertyNodeTest {
 
@@ -55,7 +57,9 @@ public class GetProfilePropertyNodeTest {
     @Mock
     private GetProfilePropertyNode.Config config;
     @Mock
-    private CoreWrapper coreWrapper;
+    private IdentityStoreFactory identityStoreFactory;
+    @Mock
+    private IdentityStore identityStore;
     @Mock
     private AMIdentity identity;
     @Mock
@@ -68,7 +72,8 @@ public class GetProfilePropertyNodeTest {
     @BeforeMethod
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
-        node = new GetProfilePropertyNode(config, realm, coreWrapper);
+        node = new GetProfilePropertyNode(config, realm, identityStoreFactory);
+        given(identityStoreFactory.create(eq(realm))).willReturn(identityStore);
         given(verifierNode.getInputs()).willReturn(new InputState[]{new InputState("*")});
     }
 
@@ -80,7 +85,7 @@ public class GetProfilePropertyNodeTest {
     @Test
     public void shouldRetrieveMultipleAttributesAtOnce() throws Exception {
         given(config.properties()).willReturn(ImmutableMap.of("foo", "bar", "fizz", "buzz"));
-        given(coreWrapper.getIdentity(anyString(), eq(realm))).willReturn(identity);
+        given(identityStore.findIdentityByUsername(anyString(), eq(IdType.USER))).willReturn(Optional.of(identity));
 
         node.process(setupTreeContext());
 
@@ -99,7 +104,7 @@ public class GetProfilePropertyNodeTest {
     @Test
     public void shouldSetAttributesOnSharedState() throws Exception {
         given(config.properties()).willReturn(ImmutableMap.of("fizz", "buzz"));
-        given(coreWrapper.getIdentity(anyString(), eq(realm))).willReturn(identity);
+        given(identityStore.findIdentityByUsername(anyString(), eq(IdType.USER))).willReturn(Optional.of(identity));
         given(identity.getAttributes(eq(singleton("fizz")))).willReturn(singletonMap("fizz", singleton("aldrin")));
 
         TreeContext context = setupTreeContext();
@@ -111,7 +116,7 @@ public class GetProfilePropertyNodeTest {
     @Test
     public void shouldUseArraysForMultivaluedAttributes() throws Exception {
         given(config.properties()).willReturn(ImmutableMap.of("foo", "bar"));
-        given(coreWrapper.getIdentity(anyString(), eq(realm))).willReturn(identity);
+        given(identityStore.findIdentityByUsername(anyString(), eq(IdType.USER))).willReturn(Optional.of(identity));
         given(identity.getAttributes(eq(singleton("foo"))))
                 .willReturn(singletonMap("foo", ImmutableSet.of("hello", "world")));
 
